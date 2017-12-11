@@ -1,0 +1,256 @@
+                                                  FFmpeg安装编译指南
+一、获取依赖
+
+1、获取依赖关系。这些是编译所必需的，但是如果您愿意，可以在完成后将其删除：
+
+    apt-get update && apt-get -y install \
+        autoconf \
+        automake \
+        build-essential \
+        cmake \
+        git \
+        libass-dev \
+        libfreetype6-dev \
+        libsdl2-dev \
+        libtheora-dev \
+        libtool \
+        libva-dev \
+        libvdpau-dev \
+        libvorbis-dev \
+        libxcb1-dev \
+        libxcb-shm0-dev \
+        libxcb-xfixes0-dev \
+        mercurial \
+        pkg-config \
+        texinfo \
+        wget \
+        zlib1g-dev
+
+注：服务器用户可以省略ffplay和x11grab依赖关系：libsdl2-dev libva-dev libvdpau-dev libxcb1-dev libxcb-shm0-dev libxcb-xfixes0-dev
+
+2、在你的主目录下建立一个新的目录，用来存放所有的源代码和二进制文件
+
+    mkdir -p ~/ffmpeg_sources ~/bin
+
+二、编译与安装
+
+本指南假定您要安装一些最常见的第三方库。每个部分都提供了安装该库所需的命令。
+
+对于每个部分，将整个代码块复制粘贴到您的shell中。
+
+如果你不需要特定的功能，你可以跳过相关章节（如果不需要的话），然后在FFmpeg中删除相应的./configure选项。例如，如果不需要libvorbis，则跳过该部分，然后从Install FFmpeg部分中删除--enable-libvorbis。
+
+提示：为了显着加快多核系统上的编译过程，在执行下面的命令之前，可以输入export MAKEFLAGS="-j4到shell中。
+
+1、NASM（一些库使用的汇编程序）
+
+    cd ~/ffmpeg_sources && \
+    wget http://www.nasm.us/pub/nasm/releasebuilds/2.13.01/nasm-2.13.01.tar.bz2 && \
+    tar -xjvf nasm-2.13.01.tar.bz2 && \
+    cd nasm-2.13.01 && \
+    ./autogen.sh && \
+    PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" && \
+    make && \
+    make install
+
+2、Yasm （一些库使用的汇编程序）
+
+如果您的存储库提供的yasm版本≥1.2.0，那么您可以安装，而不是编译：
+
+    sudo apt-get install yasm
+
+否则，你可以编译：
+
+    cd ~/ffmpeg_sources && \
+    wget -O yasm-1.3.0.tar.gz http://www.tortall.net/projects/yasm/releases/yasm-1.3.0.tar.gz && \
+    tar xzvf yasm-1.3.0.tar.gz && \
+    cd yasm-1.3.0 && \
+    ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" && \
+    make && \
+    make install
+
+3、libx264 （H.264视频编码器）
+
+需要使用--enable-gpl --enable-libx264配置ffmpeg。
+
+如果您的存储库提供了libx264-dev版本≥118，那么您可以安装它而不是编译：
+
+    sudo apt-get install libx264-dev
+
+否则，你可以编译：
+
+    cd ~/ffmpeg_sources && \
+    git -C x264 pull 2> /dev/null || git clone --depth 1 http://git.videolan.org/git/x264 && \
+    cd x264 && \
+    PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" --enable-static && \
+    PATH="$HOME/bin:$PATH" make && \
+    make install
+
+4、libx265（H.265/HEVC视频编码器）
+
+如果你的版本库提供了libx265-dev版本≥68，那么你可以安装它而不是编译：
+
+    sudo apt-get install libx265-dev
+
+否则，你可以编译：
+
+    cd ~/ffmpeg_sources && \
+    if cd x265 2> /dev/null; then hg pull && hg update; else hg clone https://bitbucket.org/multicoreware/x265; fi && \
+    cd x265/build/linux && \
+    PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DENABLE_SHARED:bool=off ../../source && \
+    PATH="$HOME/bin:$PATH" make && \
+    make install
+
+5、libvpx（VP8/VP9视频编码器和解码器）
+
+需要使用--enable-libvpx配置ffmpeg。
+
+如果你的版本库提供了libvpx-dev版本≥0.9.7，那么你可以安装而不是编译：
+
+    sudo apt-get install libvpx-dev
+
+否则，你可以编译：
+
+    cd ~/ffmpeg_sources && \
+    git -C libvpx pull 2> /dev/null || git clone --depth 1 https://chromium.googlesource.com/webm/libvpx.git && \
+    cd libvpx && \
+    PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-examples --disable-unit-tests --enable-vp9-highbitdepth --as=yasm && \
+    PATH="$HOME/bin:$PATH" make && \
+    make install
+
+6、libfdk-AAC（AAC音频编码器）
+
+需要使用--enable-libfdk-aac配置ffmpeg（如果你还包括--enable-gpl，则需要使用--enable-nonfree配置ffmpeg）。
+
+如果你的版本库提供了libfdk-aac-dev，那么你可以安装它而不是编译：
+
+    sudo apt-get安装libfdk-aac-dev
+
+否则，你可以编译：
+
+    cd ~/ffmpeg_sources && \
+    git -C fdk-aac pull 2> /dev/null || git clone --depth 1 https://github.com/mstorsjo/fdk-aac && \
+    cd fdk-aac && \
+    autoreconf -fiv && \
+    ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && \
+    make && \
+    make install
+
+7、libmp3lame（MP3音频编码器）
+
+需要使用--enable-libmp3lame配置ffmpeg。
+
+如果您的存储库提供了libmp3lame-dev版本≥3.98.3，那么您可以安装，而不是编译：
+
+    sudo apt-get install libmp3lame-dev
+
+否则，你可以编译：
+
+    cd ~/ffmpeg_sources && \
+    wget -O lame-3.100.tar.gz http://downloads.sourceforge.net/project/lame/lame/3.100/lame-3.100.tar.gz && \
+    tar xzvf lame-3.100.tar.gz && \
+    cd lame-3.100 && \
+    PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" --disable-shared --enable-nasm && \
+    PATH="$HOME/bin:$PATH" make && \
+    make install
+
+8、libopus（Opus音频解码器和编码器）
+
+需要使用--enable-libopus配置ffmpeg。
+
+如果您的存储库提供libopus-dev版本≥1.1，那么您可以安装它而不是编译：
+
+    sudo apt-get install libopus-dev
+
+否则，你可以编译：
+
+    cd ~/ffmpeg_sources && \
+    git -C opus pull 2> /dev/null || git clone --depth 1 https://github.com/xiph/opus.git && \
+    cd opus && \
+    ./autogen.sh && \
+    ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && \
+    make && \
+    make install
+
+9、FFmpeg
+
+    cd ~/ffmpeg_sources && \
+    wget -O ffmpeg-snapshot.tar.bz2 http://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2 && \
+    tar xjvf ffmpeg-snapshot.tar.bz2 && \
+    cd ffmpeg && \
+    PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure \
+        --prefix="$HOME/ffmpeg_build" \
+        --pkg-config-flags="--static" \
+        --extra-cflags="-I$HOME/ffmpeg_build/include" \
+        --extra-ldflags="-L$HOME/ffmpeg_build/lib" \
+        --extra-libs="-lpthread -lm" \
+        --bindir="$HOME/bin" \
+        --enable-gpl \
+        --enable-libass \
+        --enable-libfdk-aac \
+        --enable-libfreetype \
+        --enable-libmp3lame \
+        --enable-libopus \
+        --enable-libtheora \
+        --enable-libvorbis \
+        --enable-libvpx \
+        --enable-libx264 \
+        --enable-libx265 \
+        --enable-nonfree && \
+    PATH="$HOME/bin:$PATH" make && \
+    make install
+    hash -r
+
+编译现在已经完成，ffmpeg（还有ffprobe，ffserver，lame和x264）现在应该可以使用了。本指南的其余部分将介绍如何更新或删除FFmpeg。
+
+三、更新与删除
+
+1、用法
+
+有几种方法可以使用新的ffmpeg。
+    导航到~/bin目录并执行二进制文件：cd ~/bin && ./ffmpeg -i ~/input.mp4 ~/videos/output.mkv（注意./）
+    或者使用二进制文件的完整路径：~/bin/ffmpeg -i ../input.mp4 ../videos/output.mkv
+
+如果你想让ffmpeg命令在任何地方工作：
+    登录并注销
+    或者运行source ~/.profile
+
+注意：~/bin默认包含在标准的Ubuntu $PATH中（通过~/.profile文件），但只有~/bin目录确实存在。这就是为什么你必须注销然后登录或运行源source ~/.profile。
+
+2、文档
+
+如果你想运行man ffmpeg来获得文档的本地访问权限：
+
+    echo "MANPATH_MAP $HOME/bin $HOME/ffmpeg_build/share/man" >> ~/.manpath
+
+然后，您可能需要注销，然后登录才能使用ffmpeg。
+
+HTML格式的文档可在~/ffmpeg_build/share/doc/ffmpeg中找到。
+
+你也可以参考在线的FFmpeg文档，但是记住它是每天重新生成的，并且意在与最新的ffmpeg（意思是旧版本可能与在线文档不兼容）一起使用。
+
+3、更新FFmpeg
+
+开发FFmpeg是积极的，偶尔的更新可以给你新的功能和错误修复。首先，您需要删除（或移动）旧文件：
+
+    rm -rf ~/ffmpeg_build ~/bin/{ffmpeg,ffprobe,ffplay,ffserver,x264,x265}
+
+现在可以按照一开始指导重新安装（更新FFmpeg）
+
+4、还原本指南所做的更改
+
+除去构建和源文件以及二进制文件：
+
+    rm -rf ~/ffmpeg_build ~/ffmpeg_sources ~/bin/{ffmpeg,ffprobe,ffplay,ffserver,x264,x265,nasm,vsyasm,yasm,ytasm}
+    sed -i '/ffmpeg_build/d' ~/.manpath
+    hash -r
+
+您也可以从本指南中删除已经安装的软件包：
+
+sudo apt-get autoremove autoconf automake build-essential cmake git libass-dev libfreetype6-dev libmp3lame-dev libopus-dev libsdl2-dev libtheora-dev libtool libva-dev libvdpau-dev libvorbis-dev libvpx-dev libx264-dev libx265-dev libxcb1-dev libxcb-shm0-dev ibxcb-xfixes0-dev mercurial texinfo wget zlib1g-dev
+
+
+
+
+
+                                            

@@ -1,0 +1,88 @@
+                                                Nginx安装编译指南
+
+    构建使用configure命令进行配置，它定义了系统的各个方面，包括nginx允许用于连接处理的方法，最后它创建一个Makefile。该configure命令支持以下参数：
+
+    1、--prefix=path —— 定义保存服务器文件的目录。这个相同的目录也将被用于所有相关的路径configure（除了库源的路径）和nginx.conf配置文件。
+
+它将/usr/local/nginx设置默认目录。
+
+    2、--sbin-path=path —— 设置nginx可执行文件的名字，该名字仅在安装过程中使用。默认情况下，该文件被命名prefix/sbin/nginx。
+
+    3、--conf-path=path —— 设置nginx.conf配置文件的名字。如果需要的话，nginx可以始终使用不同的配置文件启动，只要在命令行参数中指定即可 -c file。
+
+默认情况下，该文件被命名为prefix/conf/nginx.conf
+
+    4、--error-log-path=path —— 设置主要错误、警告和诊断文件的名字。安装之后，可以随时在配置文件nginx.conf中使用error_log指令更改文件名。
+
+默认情况下，该文件被命名prefix/logs/error.log。
+
+    5、--http-log-path=path —— 设置HTTP服务器的主要请求日志文件的名字。安装之后，可以随时在配置文件nginx.conf中使用access_log指令更改文件名。
+
+默认情况下，该文件被命名prefix/logs/access.
+
+    6、-build=name —— 设置一个可选的nginx构建名称。
+
+    7、--user=name —— 设置工作进程将使用其凭据的非特权用户的名字。安装之后，可以随时在配置文件nginx.conf中使用user指令更改用户名。
+
+默认的用户名是nobody。
+
+    8、--group=name —— 设置工作进程将使用其凭据的组的名称。安装之后，可以随时在配置文件nginx.conf中使用user指令更改组名。
+    
+默认情况下，组名称设置为非特权用户的名称。
+
+    9、--with-poll_module
+
+    --without-poll_module —— 启用或禁用构建允许服务器使用该poll()方法的模块。如果平台不支持更合适的方法（如kqueue，epoll或/dev/poll）
+
+则自动构建此模块。
+
+    10、--without-http_gzip_module —— 禁用构建压缩HTTP服务器响应的模块。zlib库是建立和运行这个模块所必需的。
+
+    11、--without-http_rewrite_module —— 禁用构建允许HTTP服务器重定向请求并更改请求URI的模块。PCRE库需要构建和运行这个模块。
+
+    12、--without-http_proxy_module —— 禁用构建HTTP服务器代理模块。
+
+    13、--with-http_ssl_module —— 可以构建一个模块，将HTTPS协议支持添加到HTTP服务器，该模块不是默认生成的。OpenSSL库需要构建和运行这个模块。
+
+    14、--with-pcre=path —— 设置PCRE库源的路径。该库需要从PCRE网站下载并提取。其余的由nginx的./configure和make完成，在location指令和 
+
+ngx_http_rewrite_module模块中，该库是支持正则表达式所必需的。
+
+    15、--with-pcre-jit —— 用“即时编译”支持（1.1.12，pcre_jit指令）构建PCRE库 。
+
+    16、--with-zlib=path —— 设置zlib库的源的路径。该库需要从zlib站点下载 并提取。其余的是由nginx的./configure和make完成。
+
+该库是ngx_http_gzip_module模块所必需的 。
+
+    17、--with-cc-opt=parameters —— 设置将被添加到CFLAGS变量的附加参数。
+
+在FreeBSD下使用系统PCRE库时，应该指定--with-cc-opt="-I /usr/local/include"。
+
+如果select()需要增加支持的文件数量，也可以在这里指定如下：--with-cc-opt="-D FD_SETSIZE=2048"。
+
+    18、--with-ld-opt=parameters —— 设置将在链接期间使用的其他参数。
+
+在FreeBSD下使用系统PCRE库时，应该指定--with-ld-opt="-L /usr/local/lib"。
+
+参数使用示例（所有这些都需要输入一行）：
+
+    ./configure \
+        --prefix=$HOME/nginx_build/nginx \
+        --sbin-path=$HOME/bin/nginx \
+        --user=xgchao \
+        --group=xgchao \
+        --with-http_ssl_module \
+        --with-pcre=../pcre-8.41 \
+        --with-zlib=../zlib-1.2.11 \
+        --with-openssl=../openssl-1.1.0g
+
+配置完成后，nginx被编译安装使用make。
+
+除去构建和源文件以及二进制文件：
+
+    rm -rf ~/nginx_build ~/nginx_sources ~/bin/{nginx}
+    hash -r
+
+您也可以从本指南中删除已经安装的软件包：
+
+    sudo apt-get autoremove pcre zlib openssl 
