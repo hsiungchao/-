@@ -60,8 +60,7 @@ RUN mkdir -p ~/ffmpeg_sources ~/bin && \
         --enable-nonfree && \
     PATH="$HOME/bin:$PATH" make && \
     make install && \
-    mv ~/ffmpeg_build/bin/x265 ~/bin/ && \
-    rm ~/ffmpeg_sources ~/ffmpeg_build && \
-    echo PATH="$HOME/bin:$HOME/.local/bin:$PATH" >> .profile
+    rm -rf ~/ffmpeg_sources ~/ffmpeg_build && \
+    echo -e "PATH=\"$HOME/bin:$HOME/.local/bin:$PATH\"" >> .profile
     
 
