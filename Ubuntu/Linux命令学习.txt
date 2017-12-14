@@ -1,0 +1,69 @@
+一、echo命令——如何使用echo指令向文件写入内容
+
+    1、前言
+        如何使用echo命令向文件中写入内容，例如使用echo指令覆盖文件内容，使用echo指令向文件追加内容，使用echo指令往文件中追加制表符。
+    echo向文件中输出内容的基本方法是使用IO重定向指令——“>”，默认情况下echo输出到标准输出中，使用>指令可重定向输出到文件中。
+
+    2、echo指令基本用法
+        输入指令获得帮助"sudo echo --help",返回内容如下:
+
+        用法：echo [短选项]... [字符串]...  
+        或：echo 长选项 
+
+        将 STRING 回显到标准输出。  
+  
+        -n 不尾随换行符  
+        -e 启用解释反斜杠的转义功能  
+        -E 禁用解释反斜杠的转义功能(默认)  
+        --help 显示此帮助信息并退出  
+        --version 显示版本信息并退出  
+        若-e 可用，则以下序列即可识别：  
+        \\    反斜杠  
+        \a    响铃声  
+        \b    退格  
+        \c    不再产生新的输出  
+        \e    转义符    
+        \f    换页  
+        \n    新行  
+        \r    回车  
+        \t    水平制表符  
+        \v    竖直制表符  
+        \0NNN   字节数以八进制数 NNN (1至3位)表示  
+        \xHH    字节数以十六进制数 HH (1至2位)表示
+
+    3、覆盖文件内容
+        使用>指令覆盖文件原内容并重新输入内容，若文件不存在则创建文件。
+            echo "Raspberry" > test.txt
+        test.txt 文件内容为：
+            Raspberry
+
+    4、追加文件内容
+        使用>>指令向文件追加内容，原内容将保存。
+            echo "Raspberry" > test.txt  
+            echo "Intel Galileo" >> test.txt  
+        test.txt 文件内容为：
+            Raspberry
+            Intel Galileo
+        注意：echo指令默认在行尾增加回车(\n)，所以此处显示两行。
+
+    5、输入转义字符
+        使用-e参数可启用转义字符。下面通过echo指令向文件写入一个JSON数据包。
+            echo -e "{" > test-json.txt  
+            echo -e "\t\"name\":\"xukai871105\"" >> test-json.txt  
+            echo -e "}" >> test-json.txt  
+        说明：此处用到了两处转义字符，\t制表符，\"双引号。
+        test-json.txt 文件内容为：
+            {
+                "name":"xukai871105"
+            }
+
+    6、使用变量
+        上面的脚本中3处使用了文件名称test-json.txt，如果文件名称需要修改那么就需要修改3处，这样的操作显得麻烦些，为了简化操作可以使用变量简化脚本。
+            FILE="test-json.txt"  
+            echo -e "{" > $FILE  
+            echo -e "\t\"name\":\"xukai871105\"" >> $FILE  
+            echo -e "}" >> $FILE  
+        test-json.txt 文件内容为：
+            {
+                "name":"xukai871105"
+            }
