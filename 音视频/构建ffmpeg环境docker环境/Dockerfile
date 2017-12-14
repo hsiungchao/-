@@ -1,23 +1,6 @@
-FROM ubuntu:16.04
+FROM ubuntu:basis
 
-# 获取依赖关系
-RUN apt-get update && apt-get -y install \
-        autoconf \
-        automake \
-        build-essential \
-        cmake \
-        git \
-        libass-dev \
-        libfreetype6-dev \
-        libtheora-dev \
-        libtool \
-        libvorbis-dev \
-        mercurial \
-        pkg-config \
-        texinfo \
-        wget \
-        zlib1g-dev && \
-        mkdir -p ~/ffmpeg_sources ~/bin && \
+RUN mkdir -p ~/ffmpeg_sources ~/bin && \
 
 # 编译安装NASM（一些库使用的汇编程序）
     cd ~/ffmpeg_sources && \
@@ -46,22 +29,6 @@ RUN apt-get update && apt-get -y install \
     PATH="$HOME/bin:$PATH" make && \
     make install && \
 
-# # 编译安装libx265（H.265/HEVC视频编码器）
-#     cd ~/ffmpeg_sources && \
-#     if cd x265 2> /dev/null; then hg pull && hg update; else hg clone https://bitbucket.org/multicoreware/x265; fi && \
-#     cd x265/build/linux && \
-#     PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DENABLE_SHARED:bool=off ../../source && \
-#     PATH="$HOME/bin:$PATH" make && \
-#     make install && \
-
-# # 编译安装libvpx（VP8/VP9视频编码器和解码器）
-#     cd ~/ffmpeg_sources && \
-#     git -C libvpx pull 2> /dev/null || git clone --depth 1 https://github.com/webmproject/libvpx.git && \
-#     cd libvpx && \
-#     PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-examples --disable-unit-tests --enable-vp9-highbitdepth --as=yasm && \
-#     PATH="$HOME/bin:$PATH" make && \
-#     make install && \
-
 # 编译安装libfdk-AAC（AAC音频编码器）
     cd ~/ffmpeg_sources && \
     git -C fdk-aac pull 2> /dev/null || git clone --depth 1 https://github.com/mstorsjo/fdk-aac && \
@@ -70,24 +37,6 @@ RUN apt-get update && apt-get -y install \
     ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && \
     make && \
     make install && \
-
-# # 编译安装libmp3lame（MP3音频编码器）
-#     cd ~/ffmpeg_sources && \
-#     wget -O lame-3.100.tar.gz http://downloads.sourceforge.net/project/lame/lame/3.100/lame-3.100.tar.gz && \
-#     tar xzvf lame-3.100.tar.gz && \
-#     cd lame-3.100 && \
-#     PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" --disable-shared --enable-nasm && \
-#     PATH="$HOME/bin:$PATH" make && \
-#     make install && \
-
-# # 编译安装libopus（Opus音频解码器和编码器）
-#     cd ~/ffmpeg_sources && \
-#     git -C opus pull 2> /dev/null || git clone --depth 1 https://github.com/xiph/opus.git && \
-#     cd opus && \
-#     ./autogen.sh && \
-#     ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && \
-#     make && \
-#     make install && \
 
 # 编译安装FFmpeg
     cd ~/ffmpeg_sources && \
@@ -105,15 +54,14 @@ RUN apt-get update && apt-get -y install \
         --enable-libass \
         --enable-libfdk-aac \
         --enable-libfreetype \
-        # --enable-libmp3lame \
-        # --enable-libopus \
         --enable-libtheora \
         --enable-libvorbis \
-        # --enable-libvpx \
         --enable-libx264 \
-        # --enable-libx265 \
         --enable-nonfree && \
     PATH="$HOME/bin:$PATH" make && \
     make install && \
-    hash -r
+    mv ~/ffmpeg_build/bin/x265 ~/bin/ && \
+    rm ~/ffmpeg_sources ~/ffmpeg_build && \
+    echo PATH="$HOME/bin:$HOME/.local/bin:$PATH" >> .profile
+    
 
