@@ -1,6 +1,6 @@
 FROM ubuntu:basis
 
-RUN mkdir -p ~/ffmpeg_sources ~/bin && \
+RUN mkdir -p ~/ffmpeg_sources && \
 
 # 编译安装NASM（一些库使用的汇编程序）
     cd ~/ffmpeg_sources && \
@@ -8,7 +8,7 @@ RUN mkdir -p ~/ffmpeg_sources ~/bin && \
     tar -xjvf nasm-2.13.01.tar.bz2 && \
     cd nasm-2.13.01 && \
     ./autogen.sh && \
-    PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" && \
+    ./configure && \
     make && \
     make install && \ 
 
@@ -17,7 +17,7 @@ RUN mkdir -p ~/ffmpeg_sources ~/bin && \
     wget -O yasm-1.3.0.tar.gz http://www.tortall.net/projects/yasm/releases/yasm-1.3.0.tar.gz && \
     tar xzvf yasm-1.3.0.tar.gz && \
     cd yasm-1.3.0 && \
-    ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" && \
+    ./configure && \
     make && \
     make install && \
 
@@ -25,7 +25,7 @@ RUN mkdir -p ~/ffmpeg_sources ~/bin && \
     cd ~/ffmpeg_sources && \
     git -C x264 pull 2> /dev/null || git clone --depth 1 http://git.videolan.org/git/x264 && \
     cd x264 && \
-    PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure --enable-static && \
+    ./configure --enable-static && \
     make && \
     make install && \
 
@@ -34,7 +34,7 @@ RUN mkdir -p ~/ffmpeg_sources ~/bin && \
     git -C fdk-aac pull 2> /dev/null || git clone --depth 1 https://github.com/mstorsjo/fdk-aac && \
     cd fdk-aac && \
     autoreconf -fiv && \
-    ./configure--disable-shared && \
+    ./configure --disable-shared && \
     make && \
     make install && \
 
@@ -43,7 +43,7 @@ RUN mkdir -p ~/ffmpeg_sources ~/bin && \
     wget -O ffmpeg-snapshot.tar.bz2 http://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2 && \
     tar xjvf ffmpeg-snapshot.tar.bz2 && \
     cd ffmpeg && \
-    PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure \
+    ./configure \
         --extra-libs="-lpthread -lm" \
         --enable-gpl \
         --enable-libass \
@@ -55,6 +55,6 @@ RUN mkdir -p ~/ffmpeg_sources ~/bin && \
         --enable-nonfree && \
     make && \
     make install && \
-    rm -rf ~/ffmpeg_sources ~/ffmpeg_build ~/bin
+    rm -rf ~/ffmpeg_sources
     
 
