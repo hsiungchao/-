@@ -25,7 +25,7 @@ RUN mkdir -p ~/ffmpeg_sources ~/bin && \
     cd ~/ffmpeg_sources && \
     git -C x264 pull 2> /dev/null || git clone --depth 1 http://git.videolan.org/git/x264 && \
     cd x264 && \
-    ./configure --enable-static && \
+    PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure --enable-static && \
     make && \
     make install && \
 
@@ -43,7 +43,7 @@ RUN mkdir -p ~/ffmpeg_sources ~/bin && \
     wget -O ffmpeg-snapshot.tar.bz2 http://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2 && \
     tar xjvf ffmpeg-snapshot.tar.bz2 && \
     cd ffmpeg && \
-    ./configure \
+    PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure \
         --extra-libs="-lpthread -lm" \
         --enable-gpl \
         --enable-libass \
