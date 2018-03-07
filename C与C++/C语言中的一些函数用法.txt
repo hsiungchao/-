@@ -1,0 +1,134 @@
+一、文件操作的一些C语言函数
+1、access()
+    头文件：unistd.h
+    功 能: 确定文件或文件夹的访问权限。即，检查某个文件的存取方式，比如说是只读方式、只写方式等。如果指定的存取方式有效，则函数返回0，否则函数返回-1。
+    用 法: int access(const char *filepath, int mode); 或者int _access( const char *filepath, int mode );
+    参数说明：
+        filepath 文件或文件夹的路径，当前目录直接使用文件或文件夹名
+        备注：当该参数为文件的时候，access函数能使用mode参数所有的值，当该参数为文件夹的时候，access函数值能判断文件夹是否存在。在WIN NT 中，所有的文件夹都有读和写权限
+        mode 要判断的模式
+            在头文件unistd.h中的预定义如下：
+                #define R_OK 4  /* Test for read permission. */
+                #define W_OK 2  /* Test for write permission. */
+                #define X_OK 1  /* Test for execute permission. */
+                #define F_OK 0  /* Test for existence. */
+            具体含义如下：
+                R_OK 只判断是否有读权限
+                W_OK 只判断是否有写权限
+                X_OK 判断是否有执行权限
+                F_OK 只判断是否存在
+
+2、stat()
+    头文件:
+        #include <sys/stat.h>
+        #include <unistd.h>
+    定义函数:   
+        int stat(const char *filename, struct stat *buf);
+    函数说明:   
+        通过文件名filename获取文件信息，并保存在buf所指的结构体stat中返回值:执行成功则返回0，失败返回-1，错误代码存于errno
+            errno:
+                ENOENT         参数file_name指定的文件不存在
+                ENOTDIR        路径中的目录存在但却非真正的目录
+                ELOOP          欲打开的文件有过多符号连接问题，上限为16符号连接
+                EFAULT         参数buf为无效指针，指向无法存在的内存空间
+                EACCESS        存取文件时被拒绝
+                ENOMEM         核心内存不足
+                ENAMETOOLONG   参数file_name的路径名称太长
+    范例：
+        #include <sys/stat.h>  
+        #include <unistd.h>  
+        #include <stdio.h>  
+  
+        int main() {  
+            struct stat buf;  
+            stat("test", &buf);  
+            printf("the file size = %d\n", buf.st_size);  
+        }  
+    stat结构体：
+        struct stat {
+            dev_t          st_dev;       //文件的设备编号
+            ino_t          st_ino;       //节点
+            mode_t         st_mode;      //文件的类型和存取的权限
+            nlink_t        st_nlink;     //连到该文件的硬连接数目，刚建立的文件值为1
+            uid_t          st_uid;       //用户ID
+            gid_t          st_gid;       //组ID
+            dev_t          st_rdev;      //(设备类型)若此文件为设备文件，则为其设备编号
+            off_t          st_size;      //文件字节数(文件大小)
+            unsigned long  st_blksize;   //块大小(文件系统的I/O 缓冲区大小)
+            unsigned long  st_blocks;    //块数
+            time_t         st_atime;     //最后一次访问时间
+            time_t         st_mtime;     //最后一次修改时间
+            time_t         st_ctime;     //最后一次改变时间(指属性)
+        };
+        st_mode是用特征位来表示文件类型的，特征位的定义如下：
+            S_IFMT      0170000     文件类型的位遮罩  
+            S_IFSOCK    0140000     socket  
+            S_IFLNK     0120000     符号链接(symbolic link)  
+            S_IFREG     0100000     一般文件  
+            S_IFBLK     0060000     区块装置(block device)  
+            S_IFDIR     0040000     目录  
+            S_IFCHR     0020000     字符装置(character device)  
+            S_IFIFO     0010000     先进先出(fifo)  
+            S_ISUID     0004000     文件的(set user-id on execution)位  
+            S_ISGID     0002000     文件的(set group-id on execution)位  
+            S_ISVTX     0001000     文件的sticky位  
+            S_IRWXU     00700       文件所有者的遮罩值(即所有权限值)  
+            S_IRUSR     00400       文件所有者具可读取权限  
+            S_IWUSR     00200       文件所有者具可写入权限  
+            S_IXUSR     00100       文件所有者具可执行权限  
+            S_IRWXG     00070       用户组的遮罩值(即所有权限值)  
+            S_IRGRP     00040       用户组具可读取权限  
+            S_IWGRP     00020       用户组具可写入权限  
+            S_IXGRP     00010       用户组具可执行权限  
+            S_IRWXO     00007       其他用户的遮罩值(即所有权限值)  
+            S_IROTH     00004       其他用户具可读取权限  
+            S_IWOTH     00002       其他用户具可写入权限  
+            S_IXOTH     00001       其他用户具可执行权限  
+3、mkdir()
+    头文件：
+        #include <sys/stat.h>
+        #include <sys/types.h>
+    函数原型：
+        int mkdir(const char *pathname, mode_t mode);
+    函数说明：
+        mkdir()函数以mode方式创建一个以参数pathname命名的目录，mode定义新创建目录的权限。
+        返回值：若目录创建成功，则返回0；否则返回-1，并将错误记录到全局变量errno中。
+        mode方式：
+            S_IRWXU	            00700权限，代表该文件所有者拥有读，写和执行操作的权限
+            S_IRUSR(S_IREAD)	00400权限，代表该文件所有者拥有可读的权限
+            S_IWUSR(S_IWRITE)	00200权限，代表该文件所有者拥有可写的权限
+            S_IXUSR(S_IEXEC)	00100权限，代表该文件所有者拥有执行的权限
+            S_IRWXG	            00070权限，代表该文件用户组拥有读，写和执行操作的权限
+            S_IRGRP	            00040权限，代表该文件用户组拥有可读的权限
+            S_IWGRP	            00020权限，代表该文件用户组拥有可写的权限
+            S_IXGRP	            00010权限，代表该文件用户组拥有执行的权限
+            S_IRWXO	            00007权限，代表其他用户拥有读，写和执行操作的权限
+            S_IROTH	            00004权限，代表其他用户拥有可读的权限
+            S_IWOTH	            00002权限，代表其他用户拥有可写的权限
+            S_IXOTH	            00001权限，代表其他用户拥有执行的权限
+4、remove()
+    头文件：#include <stdio.h>
+    函数原型：int remove(char*filename);
+    函数功能：remove()函数用于删除指定的文件
+    函数参数：
+        filename为要删除的文件名，可以为一目录。如果参数filename 为一文件，则调用unlink()处理；若参数filename 为一目录，则调用rmdir()来处理。
+    函数返回值：成功则返回0，失败则返回-1，错误原因存于errno。
+    函数错误码
+        EROFS 欲写入的文件为只读文件。
+        EFAULT 参数filename 指针超出可存取内存空间。
+        ENAMETOOLONG 参数filename 太长。
+        ENOMEM 核心内存不足。
+        ELOOP 参数filename 有过多符号连接问题。
+        EIO I/O 存取错误。
+    示例代码
+        #include<stdio.h>
+        int main(void) {
+            charfile[80];
+            printf("准备删除的文件名输入");
+            chars[];
+            gets(s);
+            remove(s);
+            return0;
+        }
+
+
