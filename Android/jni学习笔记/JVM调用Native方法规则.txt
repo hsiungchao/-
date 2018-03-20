@@ -1,0 +1,64 @@
+1、JVM 查找 native 方法
+    JVM 查找 native 方法有两种方式：
+        按照 JNI 规范的命名规则
+        调用 JNI 提供的 RegisterNatives 函数，将本地函数注册到 JVM 中
+
+2、JNIEXPORT 和 JNICALL 的作用
+    我们在将 HelloWorld.c 编译成动态库的时候，用-I参数包含了 JDK 安装目录下的两个头文件目录，
+    其中第一个目录为jni.h头文件所在目录，第二个是跨平台头文件目录（Mac os x系统下的目录名为 darwin，在 Windows 下目录名为 win32，
+    linux 下目录名为 linux），用于定义与平台相关的宏，其中用于标识函数用途的两个宏 JNIEXPORT 和 JNICALL，就定义在win32目录下的
+    jni_md.h头文件中。在Windows中编译dll动态库规定，如果动态库中的函数要被外部调用，需要在函数声明中添加__declspec(dllexport)标识，
+    表示将该函数导出在外部可以调用。在 Linux/Unix 系统中，这两个宏可以省略不加。这两个平台的区别是由于各自的编译器所产生的可执行文件
+    格式不一样。JNICALL 在 Windows 中的值为__stdcall，用于约束函数入栈顺序和堆栈清理的规则。
+    
+    Windows 下jni_md.h头文件内容：
+        #ifndef _JAVASOFT_JNI_MD_H_ 
+        #define _JAVASOFT_JNI_MD_H_  
+
+        #define JNIEXPORT __declspec(dllexport)  
+        #define JNIIMPORT __declspec(dllimport)  
+        #define JNICALL __stdcall  
+
+        typedef long jint;  
+        typedef __int64 jlong;  
+        typedef signed char jbyte;  
+
+        #endif   
+        
+        Linux 下jni_md.h头文件内容：
+
+        #ifndef _JAVASOFT_JNI_MD_H_  
+        #define _JAVASOFT_JNI_MD_H_  
+
+        #define JNIEXPORT  
+        #define JNIIMPORT  
+        #define JNICALL  
+
+        typedef int jint;  
+        #ifdef _LP64 /* 64-bit Solaris */  
+        typedef long jlong;  
+        #else  
+        typedef long long jlong;  
+        #endif  
+
+        typedef signed char jbyte;  
+
+        #endif  
+    从 Linux 下的jni_md.h头文件可以看出来，JNIEXPORT 和 JNICALL 是一个空定义，所以在 Linux 下 JNI 函数声明可以省略这两个宏。
+
+    函数的命名规则：
+        用 javah 工具生成函数原型的头文件，函数命名规则为：Java_类全路径_方法名。如Java_com_study_jnilearn_HelloWorld_sayHello，
+        其中Java_是函数的前缀，com_study_jnilearn_HelloWorld是类名，sayHello是方法名，它们之间用 _(下划线) 连接。
+
+    函数参数：
+        JNIEXPORT jstring JNICALL Java_com_study_jnilearn_HelloWorld_sayHello(JNIEnv *, jclass, jstring);
+        第一个参数：JNIEnv* 是定义任意 native 函数的第一个参数（包括调用 JNI 的 RegisterNatives 函数注册的函数），指向 JVM 函数表
+        的指针，函数表中的每一个入口指向一个 JNI 函数，每个函数用于访问 JVM 中特定的数据结构。
+        第二个参数：调用 Java 中 native 方法的实例或 Class 对象，如果这个 native 方法是实例方法，则该参数是 jobject，如果是静态方法，
+        则是 jclass。
+        第三个参数：Java 对应 JNI 中的数据类型，Java 中 String 类型对应 JNI 的 jstring 类型。（后面会详细介绍 JAVA 与 JNI 数据类型
+        的映射关系）。
+    函数返回值类型：夹在 JNIEXPORT 和 JNICALL 宏中间的 jstring，表示函数的返回值类型，对应 Java 的String 类型。
+
+总结：当我们熟悉了 JNI 的 native 函数命名规则之后，就可以不用通过javah命令去生成相应 java native方法的函数原型了，只需要按照函数命名规
+则编写相应的函数原型和实现即可。
