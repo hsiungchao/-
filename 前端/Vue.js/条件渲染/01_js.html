@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset = "UTF-8"/>
+        <title>使用简单js的条件渲染</title>
+        <style>
+            div {
+                color: purple;
+                text-decoration: none;
+                font-size: 30px;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- <div id = "container"></div> -->
+        <div>
+            <a href="#">我是超链接</a>
+        </div>
+        <div>
+        <h1>我是大标题</h1>
+        </div>
+        <script>
+            const items = [
+                'thingie',
+                'another thingie',
+                'lots of stuff',
+                'yadda yadda'
+            ];
+            function listOfStuff() {
+                let full_list = '';
+                for(let i = 0; i < items.length; i++) {
+                    full_list = full_list + `<li>${items[i]}</li>`
+                }
+                const contain = document.querySelector('#container');
+                contain.innerHTML = `<ul> ${full_list} </ul>`;  
+            }
+            listOfStuff();
+        </script>
+    </body>
+</html> 
